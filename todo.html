@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskFlow — To-Do App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#f5f6fa;--white:#ffffff;--ink:#0f0f1a;--muted:#6b7280;--border:#e5e7eb;--accent:#6366f1;--accent2:#8b5cf6;--success:#10b981;--warning:#f59e0b;--danger:#ef4444;--work:#3b82f6;--personal:#ec4899;--health:#10b981;--study:#f59e0b;--sans:'Inter',sans-serif;--display:'Syne',sans-serif}
+    html{scroll-behavior:smooth}
+    body{font-family:var(--sans);background:var(--bg);color:var(--ink);min-height:100vh}
+    header{background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);padding:2rem 1.5rem 4rem;position:relative;overflow:hidden}
+    header::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.07)}
+    header::after{content:'';position:absolute;bottom:-40px;left:20%;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,0.05)}
+    .header-inner{max-width:680px;margin:0 auto;position:relative;z-index:1}
+    .app-title{font-family:var(--display);font-size:2rem;font-weight:800;color:#fff;margin-bottom:.3rem}
+    .app-sub{color:rgba(255,255,255,.7);font-size:.88rem;margin-bottom:1.5rem}
+    .stats-bar{display:flex;gap:1rem;flex-wrap:wrap}
+    .stat-pill{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:50px;padding:.4rem 1rem;font-size:.8rem;color:#fff;font-weight:500}
+    .stat-pill span{font-weight:700}
+    main{max-width:680px;margin:-2rem auto 0;padding:0 1rem 3rem;position:relative;z-index:2}
+    .add-card{background:var(--white);border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.08);padding:1.4rem;margin-bottom:1.2rem}
+    .add-card-title{font-family:var(--display);font-size:.85rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem}
+    .add-row{display:flex;gap:.6rem;margin-bottom:.8rem}
+    .task-input{flex:1;padding:.75rem 1rem;border:1.5px solid var(--border);border-radius:10px;font-family:var(--sans);font-size:.9rem;color:var(--ink);outline:none;transition:border-color .2s}
+    .task-input:focus{border-color:var(--accent)}
+    .add-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:10px;padding:.75rem 1.2rem;font-size:1.2rem;cursor:pointer;transition:transform .15s;flex-shrink:0}
+    .add-btn:hover{transform:scale(1.05)}
+    .add-meta{display:flex;gap:.6rem;flex-wrap:wrap}
+    .meta-select{padding:.5rem .8rem;border:1.5px solid var(--border);border-radius:8px;font-family:var(--sans);font-size:.82rem;color:var(--ink);outline:none;background:var(--white);cursor:pointer;transition:border-color .2s;flex:1;min-width:120px}
+    .meta-select:focus{border-color:var(--accent)}
+    .filters-card{background:var(--white);border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.06);padding:1rem 1.2rem;margin-bottom:1.2rem}
+    .filters-row{display:flex;gap:.5rem;flex-wrap:wrap}
+    .filter-btn{padding:.4rem .9rem;border-radius:50px;border:1.5px solid var(--border);background:transparent;font-size:.78rem;font-weight:600;cursor:pointer;font-family:var(--sans);color:var(--muted);transition:all .2s}
+    .filter-btn:hover{border-color:var(--accent);color:var(--accent)}
+    .filter-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+    .filter-btn.cat-work.active{background:var(--work);border-color:var(--work)}
+    .filter-btn.cat-personal.active{background:var(--personal);border-color:var(--personal)}
+    .filter-btn.cat-health.active{background:var(--health);border-color:var(--health)}
+    .filter-btn.cat-study.active{background:var(--study);border-color:var(--study)}
+    .tasks-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem;padding:0 .2rem}
+    .tasks-count{font-size:.82rem;color:var(--muted);font-weight:500}
+    .clear-done-btn{font-size:.78rem;color:var(--danger);background:none;border:none;cursor:pointer;font-family:var(--sans);font-weight:600;padding:.3rem .6rem;border-radius:6px;transition:background .2s}
+    .clear-done-btn:hover{background:rgba(239,68,68,.08)}
+    .tasks-list{display:flex;flex-direction:column;gap:.7rem}
+    .task-card{background:var(--white);border-radius:14px;border:1.5px solid var(--border);padding:1rem 1.1rem;display:flex;align-items:flex-start;gap:.8rem;transition:border-color .2s,opacity .2s,transform .15s;animation:slideIn .25s ease}
+    @keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+    .task-card:hover{border-color:#d1d5db;transform:translateX(2px)}
+    .task-card.done{opacity:.55}
+    .task-card.done .task-text{text-decoration:line-through;color:var(--muted)}
+    .task-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);background:transparent;cursor:pointer;flex-shrink:0;margin-top:1px;transition:all .2s;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:transparent}
+    .task-check:hover{border-color:var(--accent)}
+    .task-card.done .task-check{background:var(--success);border-color:var(--success);color:#fff}
+    .task-body{flex:1;min-width:0}
+    .task-text{font-size:.92rem;font-weight:500;margin-bottom:.4rem;word-break:break-word}
+    .task-meta{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+    .cat-badge{font-size:.68rem;font-weight:700;padding:.15rem .6rem;border-radius:50px;text-transform:uppercase;letter-spacing:.05em}
+    .cat-work{background:rgba(59,130,246,.1);color:var(--work)}
+    .cat-personal{background:rgba(236,72,153,.1);color:var(--personal)}
+    .cat-health{background:rgba(16,185,129,.1);color:var(--health)}
+    .cat-study{background:rgba(245,158,11,.1);color:var(--study)}
+    .cat-other{background:rgba(107,114,128,.1);color:var(--muted)}
+    .priority-badge{font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:50px;text-transform:uppercase;letter-spacing:.04em}
+    .pri-high{background:rgba(239,68,68,.1);color:var(--danger)}
+    .pri-medium{background:rgba(245,158,11,.1);color:var(--warning)}
+    .pri-low{background:rgba(16,185,129,.1);color:var(--success)}
+    .task-date{font-size:.7rem;color:var(--muted)}
+    .task-actions{display:flex;gap:.3rem;flex-shrink:0}
+    .task-btn{width:30px;height:30px;border-radius:8px;border:none;background:var(--bg);cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;transition:background .2s;color:var(--muted)}
+    .task-btn:hover{background:var(--border)}
+    .task-btn.del:hover{background:rgba(239,68,68,.1);color:var(--danger)}
+    .task-edit-input{width:100%;padding:.4rem .6rem;border:1.5px solid var(--accent);border-radius:8px;font-family:var(--sans);font-size:.9rem;outline:none;margin-bottom:.4rem}
+    .empty-state{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:.9rem}
+    .empty-icon{font-size:2.5rem;margin-bottom:.8rem}
+    .empty-title{font-family:var(--display);font-size:1.1rem;font-weight:700;color:var(--ink);margin-bottom:.4rem}
+    footer{text-align:center;padding:1.5rem;font-size:.78rem;color:var(--muted)}
+    footer span{color:var(--accent);font-weight:600}
+    @media(max-width:480px){header{padding:1.5rem 1rem 3.5rem}.app-title{font-size:1.6rem}.add-row{flex-direction:column}.add-btn{width:100%;padding:.75rem}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="app-title">✅ TaskFlow</div>
+      <div class="app-sub">Your personal task manager — organized, fast, and always in sync.</div>
+      <div class="stats-bar">
+        <div class="stat-pill">Total: <span id="stat-total">0</span></div>
+        <div class="stat-pill">Done: <span id="stat-done">0</span></div>
+        <div class="stat-pill">Pending: <span id="stat-pending">0</span></div>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div class="add-card">
+      <div class="add-card-title">+ Add New Task</div>
+      <div class="add-row">
+        <input type="text" id="task-input" class="task-input" placeholder="What needs to be done?" />
+        <button class="add-btn" onclick="addTask()">+</button>
+      </div>
+      <div class="add-meta">
+        <select id="cat-select" class="meta-select">
+          <option value="other">📌 Other</option>
+          <option value="work">💼 Work</option>
+          <option value="personal">🏠 Personal</option>
+          <option value="health">💪 Health</option>
+          <option value="study">📚 Study</option>
+        </select>
+        <select id="pri-select" class="meta-select">
+          <option value="medium">🟡 Medium Priority</option>
+          <option value="high">🔴 High Priority</option>
+          <option value="low">🟢 Low Priority</option>
+        </select>
+      </div>
+    </div>
+    <div class="filters-card">
+      <div class="filters-row">
+        <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+        <button class="filter-btn" onclick="setFilter('pending',this)">Pending</button>
+        <button class="filter-btn" onclick="setFilter('done',this)">Done</button>
+        <button class="filter-btn cat-work" onclick="setFilter('work',this)">💼 Work</button>
+        <button class="filter-btn cat-personal" onclick="setFilter('personal',this)">🏠 Personal</button>
+        <button class="filter-btn cat-health" onclick="setFilter('health',this)">💪 Health</button>
+        <button class="filter-btn cat-study" onclick="setFilter('study',this)">📚 Study</button>
+      </div>
+    </div>
+    <div class="tasks-header">
+      <span class="tasks-count" id="tasks-count">0 tasks</span>
+      <button class="clear-done-btn" onclick="clearDone()">Clear completed</button>
+    </div>
+    <div class="tasks-list" id="tasks-list"></div>
+  </main>
+  <footer>Built with <span>♥</span> by Dilpreet Singh · TaskFlow v1.0</footer>
+  <script>
+    let tasks=JSON.parse(localStorage.getItem('taskflow-tasks')||'[]');
+    let currentFilter='all';
+    let editingId=null;
+    function save(){localStorage.setItem('taskflow-tasks',JSON.stringify(tasks))}
+    function addTask(){
+      const input=document.getElementById('task-input');
+      const cat=document.getElementById('cat-select').value;
+      const pri=document.getElementById('pri-select').value;
+      const text=input.value.trim();
+      if(!text){input.focus();input.style.borderColor='#ef4444';setTimeout(()=>input.style.borderColor='',800);return}
+      tasks.unshift({id:Date.now(),text,category:cat,priority:pri,done:false,createdAt:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short'})});
+      save();input.value='';render()
+    }
+    function toggleDone(id){tasks=tasks.map(t=>t.id===id?{...t,done:!t.done}:t);save();render()}
+    function deleteTask(id){tasks=tasks.filter(t=>t.id!==id);save();render()}
+    function startEdit(id){editingId=id;render();const i=document.getElementById('edit-'+id);if(i){i.focus();i.select()}}
+    function saveEdit(id){const i=document.getElementById('edit-'+id);if(i&&i.value.trim()){tasks=tasks.map(t=>t.id===id?{...t,text:i.value.trim()}:t);save()}editingId=null;render()}
+    function handleEditKey(e,id){if(e.key==='Enter')saveEdit(id);if(e.key==='Escape'){editingId=null;render()}}
+    function clearDone(){tasks=tasks.filter(t=>!t.done);save();render()}
+    function setFilter(f,btn){currentFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');render()}
+    function getFiltered(){return tasks.filter(t=>{if(currentFilter==='all')return true;if(currentFilter==='pending')return!t.done;if(currentFilter==='done')return t.done;return t.category===currentFilter})}
+    function catLabel(c){return{work:'💼 Work',personal:'🏠 Personal',health:'💪 Health',study:'📚 Study',other:'📌 Other'}[c]||c}
+    function priLabel(p){return{high:'🔴 High',medium:'🟡 Medium',low:'🟢 Low'}[p]||p}
+    function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+    function render(){
+      const filtered=getFiltered();
+      const list=document.getElementById('tasks-list');
+      const done=tasks.filter(t=>t.done).length;
+      document.getElementById('stat-total').textContent=tasks.length;
+      document.getElementById('stat-done').textContent=done;
+      document.getElementById('stat-pending').textContent=tasks.length-done;
+      document.getElementById('tasks-count').textContent=`${filtered.length} task${filtered.length!==1?'s':''}`;
+      if(filtered.length===0){list.innerHTML=`<div class="empty-state"><div class="empty-icon">${currentFilter==='done'?'🎉':'📋'}</div><div class="empty-title">${currentFilter==='done'?'No completed tasks yet':'No tasks here!'}</div><p>${currentFilter==='done'?'Complete some tasks to see them here.':'Add a task above to get started.'}</p></div>`;return}
+      list.innerHTML=filtered.map(task=>`
+        <div class="task-card ${task.done?'done':''}" id="task-${task.id}">
+          <div class="task-check" onclick="toggleDone(${task.id})">✓</div>
+          <div class="task-body">
+            ${editingId===task.id?`<input id="edit-${task.id}" class="task-edit-input" value="${task.text.replace(/"/g,'&quot;')}" onblur="saveEdit(${task.id})" onkeydown="handleEditKey(event,${task.id})" />`:`<div class="task-text">${escapeHtml(task.text)}</div>`}
+            <div class="task-meta">
+              <span class="cat-badge cat-${task.category}">${catLabel(task.category)}</span>
+              <span class="priority-badge pri-${task.priority}">${priLabel(task.priority)}</span>
+              <span class="task-date">${task.createdAt}</span>
+            </div>
+          </div>
+          <div class="task-actions">
+            <button class="task-btn" onclick="startEdit(${task.id})">✏️</button>
+            <button class="task-btn del" onclick="deleteTask(${task.id})">🗑️</button>
+          </div>
+        </div>`).join('');
+    }
+    document.getElementById('task-input').addEventListener('keydown',e=>{if(e.key==='Enter')addTask()});
+    if(tasks.length===0){tasks=[{id:1,text:'Complete InternQ Week 04 assignment',category:'study',priority:'high',done:false,createdAt:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short'})},{id:2,text:'Push code to GitHub and enable Pages',category:'work',priority:'high',done:true,createdAt:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short'})},{id:3,text:'Review CSS Grid and Flexbox notes',category:'study',priority:'medium',done:false,createdAt:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short'})},{id:4,text:'Evening workout session',category:'health',priority:'medium',done:false,createdAt:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short'})}];save()}
+    render();
+  </script>
+</body>
+</html>
